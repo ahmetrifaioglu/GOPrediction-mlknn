@@ -69,16 +69,45 @@ k=20
 training_blast_results=open("%s/%s_blast_train.out" %(mlknn_files,category),"r")
 lst_training_blast_results= training_blast_results.read().split("\n")
 training_blast_results.close()
+lst_training_blast_results.remove("")
 isDash=True
 prot_train_knn_dict = dict()
+#identify kNNs for training samples
 for line in lst_training_blast_results:
-    print(line)
+    #print(line)
     if line.startswith("#"):
         isDash=True
     else:
         #Fields: query acc.ver, subject acc.ver, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score
         fields=line.split("\t")
+        query_prot_id=fields[0].split("|")[1]
+        target_prot_id = fields[1].split("|")[1]
+        score = fields[11]
+        #print(query_prot_id,target_prot_id,score)
         try:
-            prot_train_knn_dict
-
-    break
+            if len(prot_train_knn_dict[query_prot_id])<k:
+                prot_train_knn_dict[query_prot_id].append([target_prot_id,float(score)])
+        except:
+            prot_train_knn_dict[query_prot_id] = []
+            prot_train_knn_dict[query_prot_id].append([target_prot_id,float(score)])
+prots_no_neighbours =set()
+c_dict = dict()
+cnot_dict = dict()
+for go in lst_go_terms:
+    for j in range(k+1):
+        c_dict[j] = 0
+        cnot_dict[j] = 0
+    for prot in train_prot_dict.keys():
+        delta = 0
+        try:
+            for neigh in prot_train_knn_dict[prot]:
+                #print(neigh) 
+                if len(train_prot_dict[neigh[0]]) and go in train_prot_dict[neigh[0]]:
+                    delta +=1
+        except:
+            prots_no_neighbours.add(prot)
+            pass
+print(prots_no_neighbours)
+#for key in prot_train_knn_dict.keys():
+#    if len(prot_train_knn_dict[key])<k:
+#        print(key,len(prot_train_knn_dict[key]))
