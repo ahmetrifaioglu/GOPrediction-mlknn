@@ -91,6 +91,7 @@ for line in lst_training_blast_results:
             prot_train_knn_dict[query_prot_id] = []
             prot_train_knn_dict[query_prot_id].append([target_prot_id,float(score)])
 prots_no_neighbours =set()
+#c_dict is a dictinoary where keys are numbers between 0 and k and values are number of proteins whose neighbours are annotated by exactly key times
 c_dict = dict()
 cnot_dict = dict()
 for go in lst_go_terms:
@@ -98,6 +99,7 @@ for go in lst_go_terms:
         c_dict[j] = 0
         cnot_dict[j] = 0
     for prot in train_prot_dict.keys():
+        #delta is number of neighbors that are annotated by the corresponding GO term
         delta = 0
         try:
             for neigh in prot_train_knn_dict[prot]:
@@ -107,7 +109,13 @@ for go in lst_go_terms:
         except:
             prots_no_neighbours.add(prot)
             pass
-print(prots_no_neighbours)
+        if go in train_prot_dict[prot]:
+            c_dict[delta] += 1
+        else:
+            cnot_dict[delta] +=1
+
+
+#print(prots_no_neighbours)
 #for key in prot_train_knn_dict.keys():
 #    if len(prot_train_knn_dict[key])<k:
 #        print(key,len(prot_train_knn_dict[key]))
